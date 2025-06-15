@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import {
   isValidDocumentationUrl,
   getSupportedDomainsText,
@@ -94,52 +94,74 @@ describe('url-utils', () => {
   });
 
   describe('generateFilename', () => {
-    it('should generate Apple Developer filenames', () => {
+    beforeEach(() => {
+      // Mock the current date to ensure consistent test results
+      vi.useFakeTimers();
+      vi.setSystemTime(new Date('2025-06-14'));
+    });
+
+    afterEach(() => {
+      vi.useRealTimers();
+    });
+    it('should generate Apple Developer filenames with date prefix', () => {
       expect(generateFilename('https://developer.apple.com/documentation/swiftui')).toBe(
-        'apple-developer-documentation-swiftui-docs.md'
+        '2025-06-14_apple-developer-documentation-swiftui-docs.md'
       );
       expect(generateFilename('https://developer.apple.com/documentation/uikit/uiview')).toBe(
-        'apple-developer-documentation-uikit-docs.md'
+        '2025-06-14_apple-developer-documentation-uikit-docs.md'
       );
       expect(generateFilename('https://developer.apple.com/documentation/')).toBe(
-        'apple-developer-documentation-docs.md'
+        '2025-06-14_apple-developer-documentation-docs.md'
       );
     });
 
-    it('should generate Swift Package Index filenames', () => {
+    it('should generate Swift Package Index filenames with date prefix', () => {
       expect(
         generateFilename('https://swiftpackageindex.com/pointfreeco/swift-composable-architecture')
-      ).toBe('swift-package-index-pointfreeco-swift-composable-architecture-docs.md');
+      ).toBe('2025-06-14_swift-package-index-pointfreeco-swift-composable-architecture-docs.md');
       expect(generateFilename('https://swiftpackageindex.com/vapor/vapor')).toBe(
-        'swift-package-index-vapor-vapor-docs.md'
+        '2025-06-14_swift-package-index-vapor-vapor-docs.md'
       );
       expect(generateFilename('https://swiftpackageindex.com/')).toBe(
-        'swift-package-index-docs.md'
+        '2025-06-14_swift-package-index-docs.md'
       );
     });
 
-    it('should generate GitHub Pages filenames', () => {
+    it('should generate GitHub Pages filenames with date prefix', () => {
       expect(generateFilename('https://pointfreeco.github.io/swift-composable-architecture/')).toBe(
-        'github-pages----github-io--swift-composable-architecture-docs.md'
+        '2025-06-14_github-pages----github-io--swift-composable-architecture-docs.md'
       );
       expect(
         generateFilename(
           'https://pointfreeco.github.io/swift-composable-architecture/documentation/composablearchitecture'
         )
-      ).toBe('github-pages----github-io--swift-composable-architecture-documentation-docs.md');
+      ).toBe('2025-06-14_github-pages----github-io--swift-composable-architecture-documentation-docs.md');
       expect(generateFilename('https://example.github.io/')).toBe(
-        'github-pages----github-io--docs.md'
+        '2025-06-14_github-pages----github-io--docs.md'
       );
     });
 
-    it('should handle invalid URLs gracefully', () => {
-      expect(generateFilename('not-a-url')).toBe('documentation.md');
-      expect(generateFilename('')).toBe('documentation.md');
+    it('should handle invalid URLs gracefully with date prefix', () => {
+      expect(generateFilename('not-a-url')).toBe('2025-06-14_documentation.md');
+      expect(generateFilename('')).toBe('2025-06-14_documentation.md');
     });
 
-    it('should handle other domains', () => {
-      expect(generateFilename('https://example.com/docs/api')).toBe('example-com-docs-docs.md');
-      expect(generateFilename('https://example.com/')).toBe('example-com-docs.md');
+    it('should handle other domains with date prefix', () => {
+      expect(generateFilename('https://example.com/docs/api')).toBe('2025-06-14_example-com-docs-docs.md');
+      expect(generateFilename('https://example.com/')).toBe('2025-06-14_example-com-docs.md');
+    });
+
+    it('should use correct ISO 8601 date format', () => {
+      // Test different dates to ensure proper formatting
+      vi.setSystemTime(new Date('2025-01-01'));
+      expect(generateFilename('https://example.com/')).toBe('2025-01-01_example-com-docs.md');
+      
+      vi.setSystemTime(new Date('2025-12-31'));
+      expect(generateFilename('https://example.com/')).toBe('2025-12-31_example-com-docs.md');
+      
+      // Test with single digit month and day
+      vi.setSystemTime(new Date('2025-03-05'));
+      expect(generateFilename('https://example.com/')).toBe('2025-03-05_example-com-docs.md');
     });
   });
 });

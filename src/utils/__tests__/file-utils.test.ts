@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { downloadMarkdown } from '../file-utils';
 
 // Mock document methods
@@ -14,6 +14,10 @@ const mockRevokeObjectURL = vi.fn();
 describe('file-utils', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    
+    // Mock the current date to ensure consistent test results
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date('2025-06-14'));
 
     // Setup document mocks
     mockCreateElement.mockReturnValue({
@@ -37,6 +41,10 @@ describe('file-utils', () => {
       size: content[0].length,
       type: options.type,
     })) as unknown as typeof Blob;
+  });
+  
+  afterEach(() => {
+    vi.useRealTimers();
   });
 
   describe('downloadMarkdown', () => {
@@ -147,7 +155,7 @@ describe('file-utils', () => {
       });
 
       const anchorElement = mockCreateElement.mock.results[0].value;
-      expect(anchorElement.download).toBe('apple-developer-documentation-swiftui-docs.md');
+      expect(anchorElement.download).toBe('2025-06-14_apple-developer-documentation-swiftui-docs.md');
     });
 
     it('should generate correct filename for Swift Package Index', () => {
@@ -160,7 +168,7 @@ describe('file-utils', () => {
       });
 
       const anchorElement = mockCreateElement.mock.results[0].value;
-      expect(anchorElement.download).toBe('swift-package-index-vapor-vapor-docs.md');
+      expect(anchorElement.download).toBe('2025-06-14_swift-package-index-vapor-vapor-docs.md');
     });
 
     it('should generate correct filename for GitHub Pages', () => {
@@ -173,8 +181,7 @@ describe('file-utils', () => {
       });
 
       const anchorElement = mockCreateElement.mock.results[0].value;
-      expect(anchorElement.download).toContain('github-pages');
-      expect(anchorElement.download).toContain('docs.md');
+      expect(anchorElement.download).toBe('2025-06-14_github-pages----github-io--swift-composable-architecture-docs.md');
     });
 
     it('should handle results with only empty content', () => {

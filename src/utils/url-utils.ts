@@ -59,6 +59,13 @@ export function normalizeUrl(url: string): string {
 }
 
 export function generateFilename(url: string): string {
+  // Get current date in YYYY-MM-DD format (ISO 8601)
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = String(now.getMonth() + 1).padStart(2, '0');
+  const day = String(now.getDate()).padStart(2, '0');
+  const datePrefix = `${year}-${month}-${day}_`;
+
   try {
     const urlObj = new URL(url);
     const hostname = urlObj.hostname;
@@ -82,18 +89,18 @@ export function generateFilename(url: string): string {
       if (pathParts.length > 0) {
         // Take up to 2 path parts for the filename
         const pathSuffix = pathParts.slice(0, 2).join('-');
-        return `${baseName}-${pathSuffix}-docs.md`;
+        return `${datePrefix}${baseName}-${pathSuffix}-docs.md`;
       }
-      return `${baseName}-docs.md`;
+      return `${datePrefix}${baseName}-docs.md`;
     }
 
     // Fallback: use the hostname and any path
     const pathParts = pathname.split('/').filter((p) => p);
     if (pathParts.length > 0) {
-      return `${hostname.replace(/\./g, '-')}-${pathParts[0]}-docs.md`;
+      return `${datePrefix}${hostname.replace(/\./g, '-')}-${pathParts[0]}-docs.md`;
     }
-    return `${hostname.replace(/\./g, '-')}-docs.md`;
+    return `${datePrefix}${hostname.replace(/\./g, '-')}-docs.md`;
   } catch {
-    return 'documentation.md';
+    return `${datePrefix}documentation.md`;
   }
 }
